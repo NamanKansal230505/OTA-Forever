@@ -1,5 +1,7 @@
 # OTA-Forever
 
+**▶ Set up your board: https://namankansal230505.github.io/OTA-Forever/**
+
 Write Arduino code, push it to GitHub, and every linked ESP32 installs it over WiFi.
 You don't need a server or a database, and hosting is free. The updater is a separate
 firmware in its own flash partition, so **no sketch you upload can remove it**.
