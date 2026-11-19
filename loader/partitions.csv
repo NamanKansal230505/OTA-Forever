@@ -1,0 +1,13 @@
+# OTA-Forever partition table (4 MB flash and larger)
+#
+# app0 sits at 0x10000 on purpose: Arduino IDE / PlatformIO USB uploads always
+# write the sketch there, so a normal USB upload lands in a user slot and the
+# loader at the end of flash survives.
+#
+# Name,    Type, SubType, Offset,   Size
+nvs,       data, nvs,     0x9000,   0x5000
+otadata,   data, ota,     0xe000,   0x2000
+app0,      app,  ota_0,   0x10000,  0x160000
+app1,      app,  ota_1,   0x170000, 0x160000
+loader,    app,  factory, 0x2D0000, 0x120000
+ota_cfg,   data, nvs,     0x3F0000, 0x10000

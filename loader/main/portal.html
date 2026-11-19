@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OTA-Forever setup</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1b1f24;--muted:#5d6670;--line:#d9dde2;--accent:#0b6bcb;--ok:#1a7f37;--err:#c62828}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1216;--card:#171b21;--fg:#e8ebee;--muted:#9aa4ae;--line:#2c333b;--accent:#4c9bf0;--ok:#4cc26a;--err:#ff6b6b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:460px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:20px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 10px}
+label{display:block;font-weight:600;font-size:13px;margin:12px 0 4px}
+label:first-of-type{margin-top:0}
+input,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--fg);font:inherit}
+textarea{font:12px/1.35 ui-monospace,Consolas,monospace;min-height:84px}
+input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.hint{color:var(--muted);font-size:12px;margin-top:4px}
+.row{display:flex;gap:8px}.row input{flex:1}
+button{font:inherit;font-weight:600;border:0;border-radius:7px;padding:10px 14px;cursor:pointer}
+.primary{background:var(--accent);color:#fff;width:100%;padding:12px}
+.ghost{background:transparent;border:1px solid var(--line);color:var(--fg)}
+#msg{margin-top:12px;font-weight:600;min-height:1.4em}
+.ok{color:var(--ok)}.err{color:var(--err)}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <h1>OTA-Forever setup</h1>
+  <p class="sub" id="dev">Loading device info…</p>
+
+  <form id="f">
+    <div class="card">
+      <h2>WiFi</h2>
+      <label for="ssid">Network</label>
+      <div class="row">
+        <input id="ssid" name="ssid" list="nets" autocomplete="off" required>
+        <button type="button" class="ghost" id="scan">Scan</button>
+      </div>
+      <datalist id="nets"></datalist>
+      <label for="pass">Password</label>
+      <input id="pass" name="pass" type="password" autocomplete="off">
+      <div class="hint" id="passhint"></div>
+    </div>
+
+    <div class="card">
+      <h2>Firmware source</h2>
+      <label for="repo">GitHub repository</label>
+      <input id="repo" name="repo" placeholder="your-name/your-project" required>
+      <div class="hint">The repo you created with "Create my project". Paste the github.com link or type owner/name.</div>
+      <label for="channel">Branch</label>
+      <input id="channel" name="channel" placeholder="main">
+      <div class="hint">The device installs builds pushed to this branch.</div>
+      <details style="margin-top:12px" id="keybox">
+        <summary>Signing key (advanced, optional)</summary>
+        <label for="pubkey" style="margin-top:10px">Public key (ota_public_key.pem)</label>
+        <textarea id="pubkey" name="pubkey" placeholder="-----BEGIN PUBLIC KEY-----"></textarea>
+        <div class="hint">Only for signed builds. Once set (or learned from the first signed build), this device refuses unsigned or differently signed builds. Clear it to remove the key.</div>
+      </details>
+    </div>
+
+    <button class="primary" type="submit">Save and connect</button>
+    <div id="msg" role="status"></div>
+  </form>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+fetch('/config').then(r => r.json()).then(c => {
+  $('dev').textContent = c.chip.toUpperCase() + ' · ' + c.mac + (c.build ? ' · build #' + c.build : ' · no firmware yet');
+  $('ssid').value = c.ssid || '';
+  $('repo').value = c.repo || '';
+  $('channel').value = c.channel || 'main';
+  $('pubkey').value = c.pubkey || '';
+  if (c.pubkey) $('keybox').open = true;
+  if (c.has_pass) $('passhint').textContent = 'Leave empty to keep the saved password.';
+}).catch(() => { $('dev').textContent = 'Device'; });
+
+function scan() {
+  $('scan').disabled = true; $('scan').textContent = '…';
+  fetch('/scan').then(r => r.json()).then(list => {
+    $('nets').innerHTML = '';
+    list.forEach(s => { const o = document.createElement('option'); o.value = s; $('nets').appendChild(o); });
+    if (!$('ssid').value && list.length) $('ssid').value = list[0];
+  }).finally(() => { $('scan').disabled = false; $('scan').textContent = 'Scan'; });
+}
+$('scan').onclick = scan;
+scan();
+
+$('f').onsubmit = e => {
+  e.preventDefault();
+  const m = $('msg');
+  m.className = ''; m.textContent = 'Saving…';
+  fetch('/save', {method: 'POST', body: new URLSearchParams(new FormData($('f')))})
+    .then(r => r.json())
+    .then(r => {
+      if (r.ok) { m.className = 'ok'; m.textContent = 'Saved. The device is connecting to your WiFi and checking GitHub. You can close this page.'; }
+      else { m.className = 'err'; m.textContent = r.error || 'Could not save'; }
+    })
+    .catch(() => { m.className = 'err'; m.textContent = 'Lost connection to the device'; });
+};
+</script>
+</body>
+</html>

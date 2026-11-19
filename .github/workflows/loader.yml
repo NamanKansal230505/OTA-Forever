@@ -1,0 +1,57 @@
+# Builds the loader for every supported chip and publishes the browser
+# installer (installer/ + binaries) to GitHub Pages.
+# One-time setup: repo Settings > Pages > Source: "GitHub Actions".
+name: Loader + installer
+
+on:
+  push:
+    branches: [main]
+    paths: ["loader/**", "installer/**", ".github/workflows/loader.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [esp32, esp32s2, esp32s3, esp32c3, esp32c6]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build loader (${{ matrix.target }})
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.4
+          target: ${{ matrix.target }}
+          path: loader
+          command: TARGETS=${{ matrix.target }} OUT=dist bash build_all.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loader-${{ matrix.target }}
+          path: loader/dist/*.bin
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: installer/firmware
+          merge-multiple: true
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: installer
+      - id: deploy
+        uses: actions/deploy-pages@v4

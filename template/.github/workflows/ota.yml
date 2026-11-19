@@ -1,0 +1,71 @@
+name: OTA build & publish
+
+on:
+  push:
+    branches: ["**"]
+    paths-ignore: ["**.md"]
+  workflow_dispatch:
+
+permissions:
+  contents: write  # create/update the ota-<branch> release
+
+concurrency:
+  group: ota-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install pyyaml cryptography
+
+      - uses: arduino/setup-arduino-cli@v2
+
+      - name: Cache Arduino cores and libraries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15
+            ~/Arduino/libraries
+            ~/.cache/arduino
+          key: arduino-${{ runner.os }}-${{ hashFiles('ota.yml') }}
+          restore-keys: arduino-${{ runner.os }}-
+
+      - name: Build and sign
+        id: build
+        env:
+          OTA_SIGNING_KEY: ${{ secrets.OTA_SIGNING_KEY }}
+        run: python .github/ota/build.py
+
+      - name: Publish to release ota-${{ steps.build.outputs.channel }}
+        if: steps.build.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ota-${{ steps.build.outputs.channel }}
+          BUILD: ${{ steps.build.outputs.build }}
+        run: bash .github/ota/publish.sh
+
+      - name: Summary
+        if: steps.build.outputs.publish == 'true'
+        run: |
+          {
+            echo "### ✅ Build #${{ steps.build.outputs.build }} published"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Branch | \`${{ steps.build.outputs.channel }}\` |"
+            echo "| Chips | ${{ steps.build.outputs.chips }} |"
+            if [ -n "${{ steps.build.outputs.skipped }}" ]; then
+              echo "| Skipped (didn't compile) | ${{ steps.build.outputs.skipped }} |"
+            fi
+            echo "| Signed | ${{ steps.build.outputs.signed }} |"
+            echo ""
+            echo "Your boards install it on their next reset, or within a few minutes if the sketch calls \`OTAForever.begin()\`."
+          } >> "$GITHUB_STEP_SUMMARY"

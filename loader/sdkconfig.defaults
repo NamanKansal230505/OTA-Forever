@@ -1,0 +1,40 @@
+# Flash layout
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# The loader must fit in 1.125 MB
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+
+# Rollback states are not used: the loader itself is the safety net,
+# and Arduino sketches never mark themselves "valid".
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=n
+
+# Never touch the user's default "nvs" partition: the loader keeps its own
+# settings in "ota_cfg" and WiFi/PHY data stays in RAM.
+CONFIG_ESP_WIFI_NVS_ENABLED=n
+CONFIG_ESP_PHY_CALIBRATION_AND_DATA_STORAGE=n
+
+# HTTPS to github.com and its download CDN
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
+CONFIG_ESP_HTTP_CLIENT_ENABLE_HTTPS=y
+
+# TLS handshakes run in the main task
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=10240
+
+# Setup portal
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
+CONFIG_HTTPD_MAX_URI_LEN=512
+
+# Download throughput: larger TCP window and receive buffers so slow or lossy
+# links to GitHub's CDN recover quickly (defaults are sized for small RAM use).
+CONFIG_LWIP_TCP_WND_DEFAULT=32768
+CONFIG_LWIP_TCP_RECVMBOX_SIZE=32
+CONFIG_LWIP_TCPIP_RECVMBOX_SIZE=64
+CONFIG_LWIP_TCP_SACK_OUT=y
+CONFIG_LWIP_TCP_OOSEQ_MAX_PBUFS=16
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=16
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=64
+CONFIG_ESP_WIFI_RX_BA_WIN=16

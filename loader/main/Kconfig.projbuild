@@ -1,0 +1,25 @@
+menu "OTA-Forever loader"
+
+    config OTAF_BUTTON_GPIO
+        int "Setup button GPIO (active low, -1 = none)"
+        range -1 56
+        default 9 if IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32C2
+        default 0
+        help
+            Holding this button for 1 second while the loader runs (right after
+            power-on) opens the WiFi/GitHub setup portal. Defaults to the BOOT button.
+
+    config OTAF_WIFI_TIMEOUT_MS
+        int "WiFi connect timeout (ms)"
+        default 15000
+        help
+            If WiFi is not up within this time, the loader skips the update
+            check and starts the user firmware anyway.
+
+    config OTAF_BOOT_GRACE_MS
+        int "Minimum time in loader before starting the user firmware (ms)"
+        default 1500
+        help
+            Gives you a window to press the setup button after power-on.
+
+endmenu

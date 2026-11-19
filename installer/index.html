@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OTA-Forever</title>
+<meta name="description" content="Update your ESP32 over WiFi by pushing code to GitHub. Three clicks to set up.">
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#14171a;--muted:#5a636d;--line:#dde2e7;--accent:#0b6bcb;--accent-fg:#fff;--soft:#eef3fa;--ok:#1a7f37;--code:#eef1f4}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1013;--card:#15191e;--fg:#e7eaed;--muted:#97a1ab;--line:#29313a;--accent:#4c9bf0;--accent-fg:#06121f;--soft:#14202e;--ok:#4cc26a;--code:#1e242b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:44px 16px 64px}
+h1{font-size:34px;line-height:1.15;margin:0 0 10px;letter-spacing:-.02em}
+.lead{color:var(--muted);margin:0 0 30px;font-size:18px;max-width:620px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 22px 22px 70px;margin-bottom:14px;position:relative}
+.num{position:absolute;left:22px;top:22px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--accent-fg);font-weight:700;display:grid;place-items:center}
+h2{font-size:18px;margin:2px 0 6px}
+p{margin:0 0 8px}
+.muted{color:var(--muted);font-size:15px}
+code{background:var(--code);padding:1px 6px;border-radius:5px;font:14px ui-monospace,Consolas,monospace}
+.btn,esp-web-install-button button{display:inline-block;font:inherit;font-weight:650;background:var(--accent);color:var(--accent-fg);border:0;border-radius:9px;padding:11px 18px;cursor:pointer;text-decoration:none;margin-top:8px}
+.btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--fg);min-width:0;flex:1 1 260px}
+.done{background:var(--soft);border-color:transparent}
+.done h2{margin-bottom:4px}
+.links{display:none;margin-top:10px}
+.links.show{display:flex}
+.small{font-size:13px;color:var(--muted);margin-top:8px}
+footer{color:var(--muted);font-size:14px;margin-top:30px}
+footer h3{color:var(--fg);font-size:15px;margin:22px 0 6px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Update your ESP32 from GitHub.<br>Without cables.</h1>
+  <p class="lead">Set it up once, then just change your code. Each change is built on GitHub, and every board you own installs it over WiFi.</p>
+
+  <section class="step">
+    <div class="num">1</div>
+    <h2>Create your project</h2>
+    <p class="muted">You get your own copy of the starter project on GitHub, with a blinking-LED example. Keep it <strong>Public</strong> and click <strong>Create repository</strong>.</p>
+    <a class="btn" id="create" href="#" target="_blank" rel="noopener">Create my project on GitHub</a>
+    <p class="small">Free GitHub account needed. You won't install anything on your computer.</p>
+  </section>
+
+  <section class="step">
+    <div class="num">2</div>
+    <h2>Install on your board</h2>
+    <p class="muted">Plug the ESP32 into this computer over USB and click Install. Use Chrome or Edge. Supported: ESP32, ESP32-S2, ESP32-S3, ESP32-C3 and ESP32-C6 with 4 MB of flash or more.</p>
+    <esp-web-install-button manifest="manifest.json">
+      <button slot="activate">Install on my board</button>
+      <span slot="unsupported">This browser can't talk to USB devices. Please open this page in Chrome or Edge on a computer.</span>
+      <span slot="not-allowed">This page must be opened over https.</span>
+    </esp-web-install-button>
+    <p class="small">Won't connect? Hold the board's BOOT button while you click Install, or try another USB cable (some only charge).</p>
+  </section>
+
+  <section class="step">
+    <div class="num">3</div>
+    <h2>Connect it</h2>
+    <p class="muted">On your phone, join the WiFi network <code>OTA-Setup-XXXX</code>. A setup page opens (if it doesn't, go to <code>192.168.4.1</code>). Choose your WiFi network and paste your project's link:</p>
+    <div class="row">
+      <input id="repo" placeholder="github.com/your-name/your-project" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="row links" id="links">
+      <a class="btn secondary" id="l-edit" target="_blank" rel="noopener">Edit code</a>
+      <a class="btn secondary" id="l-builds" target="_blank" rel="noopener">See builds</a>
+      <button class="btn secondary" id="l-copy" type="button">Copy for setup page</button>
+    </div>
+    <p class="small">Your board remembers it. To change it later, hold BOOT for 1 second right after power-on.</p>
+  </section>
+
+  <section class="step done">
+    <div class="num">✓</div>
+    <h2>Now just change your code</h2>
+    <p class="muted">Open <code>firmware/firmware.ino</code> in your project on GitHub, click the pencil, edit, then <strong>Commit changes</strong>. GitHub builds it in a few minutes. Your board installs it the next time it restarts, or within 5 minutes while it's running.</p>
+  </section>
+
+  <footer>
+    <h3>Questions</h3>
+    <p><strong>Can I still upload with the Arduino IDE?</strong> Yes. Keep <code>partitions.csv</code> next to your sketch and the updater survives.</p>
+    <p><strong>What if a build is broken?</strong> The board keeps running the version it has. Fix the code and push again.</p>
+    <p><strong>Is it safe?</strong> Boards only install builds from your repo, downloaded over HTTPS, and check every file before using it. For extra protection, turn on signed builds (see your project's README).</p>
+  </footer>
+</main>
+<script>
+// Where the "Create my project" template lives. On GitHub Pages the owner is taken
+// from the address (owner.github.io); elsewhere the fallback is used.
+const TEMPLATE_REPO = 'ota-forever-template';
+const FALLBACK_OWNER = 'NamanKansal230505';
+
+const host = location.hostname;
+const owner = host.endsWith('.github.io') ? host.split('.')[0] : FALLBACK_OWNER;
+document.getElementById('create').href = `https://github.com/${owner}/${TEMPLATE_REPO}/generate`;
+
+const input = document.getElementById('repo');
+const links = document.getElementById('links');
+function parseRepo(v) {
+  const m = v.trim().replace(/\.git$/, '').replace(/\/+$/, '')
+    .match(/^(?:https?:\/\/)?(?:www\.)?(?:github\.com\/)?([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)$/);
+  return m ? `${m[1]}/${m[2]}` : null;
+}
+function update() {
+  const r = parseRepo(input.value);
+  links.classList.toggle('show', !!r);
+  if (!r) return;
+  document.getElementById('l-edit').href = `https://github.com/${r}/edit/main/firmware/firmware.ino`;
+  document.getElementById('l-builds').href = `https://github.com/${r}/actions`;
+  try { localStorage.setItem('otaf-repo', input.value); } catch (e) {}
+}
+document.getElementById('l-copy').onclick = async e => {
+  const r = parseRepo(input.value);
+  try { await navigator.clipboard.writeText(r); e.target.textContent = 'Copied'; }
+  catch (err) { e.target.textContent = r; }
+  setTimeout(() => e.target.textContent = 'Copy for setup page', 2000);
+};
+input.addEventListener('input', update);
+try { input.value = localStorage.getItem('otaf-repo') || ''; } catch (e) {}
+update();
+</script>
+</body>
+</html>

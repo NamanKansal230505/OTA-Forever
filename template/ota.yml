@@ -1,0 +1,27 @@
+# OTA-Forever project settings. The defaults work: you only need to edit
+# firmware/firmware.ino. Every push builds and publishes; devices update themselves.
+
+# Folder that contains your sketch (<folder>/<folder>.ino)
+sketch: firmware
+
+# Shown in device logs. Devices decide what's newer by build number, not by this.
+version: "1.0.0"
+
+# Which chips to build for.
+#   auto  = every supported chip (esp32, esp32s2, esp32s3, esp32c3, esp32c6);
+#           each device installs the one for its chip. A chip whose build fails is skipped.
+# Builds are faster if you list only what you own, e.g.:
+#   boards:
+#     - chip: esp32c3
+#       fqbn: esp32:esp32:esp32c3       # Arduino board ID (Tools > Board, or `arduino-cli board listall`)
+boards: auto
+
+# Libraries from the Arduino Library Manager, e.g. ["ArduinoJson", "Adafruit NeoPixel@1.12.3"]
+libraries: []
+
+# Arduino-ESP32 core version (empty = latest)
+core_version: ""
+
+# Branches that publish updates. Each branch is its own channel: a device set to
+# branch "dev" only installs builds pushed to "dev". "*" = every branch.
+branches: ["*"]

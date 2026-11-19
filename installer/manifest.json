@@ -1,0 +1,52 @@
+{
+  "name": "OTA-Forever Loader",
+  "version": "0.1.0",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "firmware/esp32-bootloader.bin", "offset": 4096 },
+        { "path": "firmware/esp32-partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32-otadata.bin", "offset": 57344 },
+        { "path": "firmware/esp32-loader.bin", "offset": 2949120 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S2",
+      "parts": [
+        { "path": "firmware/esp32s2-bootloader.bin", "offset": 4096 },
+        { "path": "firmware/esp32s2-partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32s2-otadata.bin", "offset": 57344 },
+        { "path": "firmware/esp32s2-loader.bin", "offset": 2949120 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "firmware/esp32s3-bootloader.bin", "offset": 0 },
+        { "path": "firmware/esp32s3-partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32s3-otadata.bin", "offset": 57344 },
+        { "path": "firmware/esp32s3-loader.bin", "offset": 2949120 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "path": "firmware/esp32c3-bootloader.bin", "offset": 0 },
+        { "path": "firmware/esp32c3-partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32c3-otadata.bin", "offset": 57344 },
+        { "path": "firmware/esp32c3-loader.bin", "offset": 2949120 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-C6",
+      "parts": [
+        { "path": "firmware/esp32c6-bootloader.bin", "offset": 0 },
+        { "path": "firmware/esp32c6-partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32c6-otadata.bin", "offset": 57344 },
+        { "path": "firmware/esp32c6-loader.bin", "offset": 2949120 }
+      ]
+    }
+  ]
+}

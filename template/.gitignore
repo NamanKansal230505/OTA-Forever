@@ -1,0 +1,6 @@
+# Never commit the private signing key
+ota_signing_key.pem
+*.key
+
+build/
+dist/
